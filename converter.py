@@ -135,24 +135,70 @@ class Zipfile2JsonL:
         self.plateform = plateform
         self.author = author
         
+        self.delete_suffix = [".DS_Store",".o","DS_Store", "o"]
+        self.whitelist_suffix = []
+        self.all_suffix = {}
+
+
+    def collect_file_statistics(self, zip_path, zf):
+        """统计每种文件后缀的平均大小"""
+        for Zfile in zf.filelist:
+            if Zfile.is_dir(): continue
+            ext = Path(Zfile.filename).suffix
+            size = Zfile.file_size
+            if ext in self.all_suffix:
+                self.all_suffix[ext]["num"] += 1
+                self.all_suffix[ext]["size"] += size
+                self.all_suffix[ext]["avg"] = self.all_suffix[ext]["size"] / self.all_suffix[ext]["num"]
+            else:
+                self.all_suffix[ext] = {"num": 1, "size": size, "avg": size, "notBnum": 0}
+
+        # 将平均大小超过200 KB的后缀标记为需要删除
+        for ext, data in self.all_suffix.items():
+            if data["avg"] > 200 * 1024:
+                self.delete_suffix.append(ext)
+
+    def should_skip_file(self, code):
+        """判断是否应该跳过此文件"""
+        if '.DS_Store' in code.path:
+            return True
+        if '.o' in code.path:
+            return True
+        if code.ext in self.whitelist_suffix:
+            return True
+        if code.ext in self.delete_suffix:
+            return True
+        if code.size > 1 * 1024 * 1024:  # 大于1MB的文件
+            return True
+        if code.size > 32 * 1024:  # 大于32KB的文件需要进一步检测
+            if b'\0' in code.text.encode(self.target_encoding) or code.encoding is None:
+                self.delete_suffix.append(code.ext)
+                return True
+        return False
+    
     def extract_without_unpack(self, zip_path):
         try:
             try:
                 zf = zipfile.ZipFile(zip_path, "r")
-            except zipfile.BadZipFile:  # 解压过程中遇到 Bad magic number for central directory 问题的解决办法
-                with open(zip_path, "rb")as r: data=r.read()
+            except zipfile.BadZipFile:
+                with open(zip_path, "rb") as r:
+                    data = r.read()
                 idx = data.find(b"PK\005\006")
                 data = io.BytesIO(data[:idx+22])
                 zf = zipfile.ZipFile(data, "r")
+
+            self.collect_file_statistics(zip_path, zf)
+
             for Zfile in zf.filelist:
                 if Zfile.is_dir(): continue
-                filepath = Zfile.filename
                 code = CodeFileInstance(zip_path, Zfile, target_encoding="utf-8", zf=zf)
-                self.save_code(code)
+                print(f"\033[1;32mextract_without_unpack: {code._path}\033[0m", flush=True)
+                if not self.should_skip_file(code):
+                    self.save_code(code)
             zf.close()
         except Exception as e:
             traceback.print_exc()
-            with open(self.output/"convert_error.log",'a')as a:
+            with open(self.output/"convert_error.log", 'a') as a:
                 a.write(traceback.format_exc()+"\n")
                 a.write(str(zip_path)+'\n')
 
@@ -188,6 +234,8 @@ class Zipfile2JsonL:
             file_list = repo_root.rglob("**/*")
             for file in file_list:
                 if not file.is_file(): continue
+                if str(file).endswith(("DS_Store", ".o", ".jpg",".png", "elf")): continue
+                # print(f"\033[1;32mget_zipfile: {file}\033[0m", flush=True)
                 code = CodeFileInstance(repo_root, file, self.target_encoding)
                 self.save_code(code)
         except:
