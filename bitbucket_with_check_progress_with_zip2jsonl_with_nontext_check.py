@@ -151,13 +151,17 @@ def main():
     ap.add_argument("-p", "--password", help="Bitbucket app password", type=str, required=True)
     ap.add_argument("-i", "--input", help="Bitbucket URLs file path", type=str, default='./clone_urls_1000')
     ap.add_argument("-o", "--output", help="Output directory", type=str, default='./bitbucket')
+    ap.add_argument("-d", "--debug", help="whether debug mode", type=str, default='True')
     ap.add_argument("-c", "--csv", help="CSV file to track download status", type=str, default='./download_status.csv')
     ap.add_argument("-j", "--jsonl_output", help="Output directory for JSONL files", type=str, default='./jsonl_output')
     args = vars(ap.parse_args())
 
     user = args['user']
     pwd = args['password']
-    input = args['input']
+    if args['debug']:
+        input = args['input']
+    else: 
+        input = "./clone_urls"
     output = args['output']
     csv_path = args['csv']
     jsonl_output = args['jsonl_output']

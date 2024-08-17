@@ -126,8 +126,8 @@ class Zipfile2JsonL:
         if not os.path.exists(output_root): os.makedirs(output_root)
         self.output = Path(output_root)
         self.target_encoding = target_encoding
-        # self.max_jsonl_size = 500 * 1024 * 1024
-        self.max_jsonl_size = 40 * 1024 * 1024
+        self.max_jsonl_size = 500 * 1024 * 1024 # 更大的jsonl文件大小限制让文件数更少。
+        # self.max_jsonl_size = 40 * 1024 * 1024 # 测试用，方便快速定位问题
         self.repo_list = list()
         # chunk_counter的值由run.py传入，默认为0
         self.chunk_counter = chunk_counter
@@ -234,8 +234,14 @@ class Zipfile2JsonL:
             file_list = repo_root.rglob("**/*")
             for file in file_list:
                 if not file.is_file(): continue
-                if str(file).endswith(("DS_Store", ".o", ".jpg",".png", "elf")): continue
-                # print(f"\033[1;32mget_zipfile: {file}\033[0m", flush=True)
+                if str(file).endswith(("DS_Store", ".o", 
+                                       "elf",  "out", ".so",".bin",".dylib",".app",".exe","dll","com","msi","src","sys","jar","pyc",".a",
+                                       "mp3","wav","aac","flac","ogg","wma",
+                                       "mp4","avi","mkv","mov","wmv","flv",
+                                       "jpg","jpeg","png","gif","bmp","tiff","svg",
+                                       "pdf","epub","mobi","docx","swf","webm","zip","rar")): continue
+                
+                print(f"\033[1;32mget_zipfile: {file}\033[0m", flush=True)
                 code = CodeFileInstance(repo_root, file, self.target_encoding)
                 self.save_code(code)
         except:
