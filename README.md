@@ -32,8 +32,7 @@ request https://bitbucket.org/username/repo/get/master.zip            仓库处�
 
 ### 分析函数
 statics.py文件：当出现太大的压缩包，希望检查jsonl的文件后缀名可以用：
-`python statictics.py --filepath /home/zhiwei/Desktop/bitbucket_crawl_mnbvc/jsonl_output/bitbucketcode.3.jsonl --l
-isthead 10`
+`python statictics.py --filepath /home/zhiwei/Desktop/bitbucket_crawl_mnbvc/jsonl_output/bitbucketcode.3.jsonl --listhead 10`
 
 输出为：
 ```
