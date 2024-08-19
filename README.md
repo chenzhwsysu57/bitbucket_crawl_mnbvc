@@ -7,21 +7,46 @@
 
 
 ## 用法
+
+### 下载函数
+1. 检查 jsonl_output 文件夹，如果有内容重命名为其他文件名
+2. 检查download_status.csv 文件，如果有内容重命名为其他文件夹
+3. `sed -n '1000,5000p' clone_urls > clone_urls_1000_5000` ，用类似的命令，把文件第1000行到5000行之间的内容写入到文件，这是接下来希望下载的文件。（总共有 794057 行）
+4. `python bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py -u 你的用户名 -p 你的token -i 刚生成的新文件`
+
+
+
+输出形式如下：
 ```
-python3 bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py 
--u USERNAME
--p BITbucket_APP_TOKEN
--o OUTPUT_DIR
--i INPUT_FILE
---debug False # 默认是True，只下载前1000个链接的仓库。
+request https://bitbucket.org/username/repo/get/master.zip            仓库处理状态 [剩余任务数/总任务数]
+request https://bitbucket.org/username/repo/get/master.zip            仓库处理状态 [剩余任务数/总任务数]
+request https://bitbucket.org/username/repo/get/master.zip            仓库处理状态 [剩余任务数/总任务数]
+...
 ```
 
+等到没有新的内容输出，或者总任务数为0说明执行结束。
 
-* USERNAME: 你的bitbucket用户名。
-* BITbucket_APP_TOKEN: 在 [app-password](https://bitbucket.org/account/settings/app-passwords/) 进行设置。[tutorial](https://support.atlassian.com/bitbucket-cloud/docs/app-passwords/). 这是bitbucket的token。
-* OUTPUT_DIR: 临时下载的仓库存放到 `./bitbucket`, 处理成jsonl之后会被删除。
-* 除此之外，zip 文件会写入到 `jsonl_output` 下。
+如果网络中断，重新执行：
+`python bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py -u 你的用户名 -p 你的token -i 刚生成的新文件` 
+即可。
 
+### 分析函数
+statics.py文件：当出现太大的压缩包，希望检查jsonl的文件后缀名可以用：
+`python statictics.py --filepath /home/zhiwei/Desktop/bitbucket_crawl_mnbvc/jsonl_output/bitbucketcode.3.jsonl --l
+isthead 10`
 
-
-
+输出为：
+```
+ext                 size
+=========================
+.js              1.06 MB
+.map           853.52 KB
+.js            726.75 KB
+.js            605.88 KB
+.js            531.08 KB
+.js            526.94 KB
+.js            507.31 KB
+.html          503.56 KB
+.json          321.81 KB
+.js            271.13 KB
+```

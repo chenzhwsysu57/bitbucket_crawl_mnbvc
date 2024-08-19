@@ -1,6 +1,6 @@
 import json
 import argparse
-
+# 检测文件大小问题。便于快速查找jsonl哪些文件很大没有被排除。
 def format_size(size):
     for unit in ['bytes', 'KB', 'MB', 'GB']:
         if size < 1024:
@@ -35,12 +35,12 @@ def process_file(file_path):
     # 输出对齐的结果
     print(f"{'ext':<8} {'size':>15}")
     print("=" * 25)
-    for ext, _, formatted_size in results[:20]:
+    for ext, _, formatted_size in results[:args.listhead]:
         print(f"{ext:<8} {formatted_size:>15}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process a JSONL file to extract and sort data by text size.")
-    parser.add_argument('filepath', type=str, help="The path to the JSONL file.")
-    
+    parser.add_argument('--filepath', type=str, help="The path to the JSONL file.")
+    parser.add_argument('--listhead', type=int, default=20, help="How many result to list")
     args = parser.parse_args()
     process_file(args.filepath)

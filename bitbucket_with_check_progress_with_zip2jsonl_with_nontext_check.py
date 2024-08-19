@@ -23,6 +23,7 @@ def load_repos(input):
             'https://bitbucket.org/isysd/dotfiles-lele85.git'
         ]
         return urls
+    print(f"reading urls {input}")
     with open(input, 'r') as f:
         urls = f.readlines()
     return urls
@@ -101,7 +102,7 @@ def download_repo(csv_path, output, jsonl_output):
 
                 try:
                     # 发出请求下载ZIP文件
-                    print(f"request {zip_url:<{max_url_len}}", end=' ')
+                    print(f"request {zip_url:<{max_url_len}}", end=' ',flush=True)
                     r = requests.get(zip_url, allow_redirects=True, verify=False, timeout=60)
                     r.raise_for_status()
 
@@ -120,14 +121,14 @@ def download_repo(csv_path, output, jsonl_output):
                     
                     update_csv_row(csv_path, row)
                     remaining_jobs -= 1
-                    print(f"\033[1;32msuccess\033[0m [{remaining_jobs}/{total_jobs}]")
+                    print(f"\033[1;32msuccess\033[0m [{remaining_jobs}/{total_jobs}]",flush=True)
                     if remaining_jobs <= 0:
                         print("process done.")
                         break
 
                 except Exception as e:
                     
-                    print(f"\033[1;31mfailed\033[0m [{remaining_jobs}/{total_jobs}], \033[0;33m{e}\033[0m")
+                    print(f"\033[1;31mfailed\033[0m [{remaining_jobs}/{total_jobs}], \033[0;33m{e}\033[0m",flush=True)
                     try:
                         row[1] = f'{e.response.status_code}'
                     except Exception as e2: # AttributeError: 'NoneType' object has no attribute 'status_code'
@@ -151,17 +152,13 @@ def main():
     ap.add_argument("-p", "--password", help="Bitbucket app password", type=str, required=True)
     ap.add_argument("-i", "--input", help="Bitbucket URLs file path", type=str, default='./clone_urls_1000')
     ap.add_argument("-o", "--output", help="Output directory", type=str, default='./bitbucket')
-    ap.add_argument("-d", "--debug", help="whether debug mode", type=str, default='True')
     ap.add_argument("-c", "--csv", help="CSV file to track download status", type=str, default='./download_status.csv')
     ap.add_argument("-j", "--jsonl_output", help="Output directory for JSONL files", type=str, default='./jsonl_output')
     args = vars(ap.parse_args())
 
     user = args['user']
     pwd = args['password']
-    if args['debug']:
-        input = args['input']
-    else: 
-        input = "./clone_urls"
+    input = args['input']
     output = args['output']
     csv_path = args['csv']
     jsonl_output = args['jsonl_output']
