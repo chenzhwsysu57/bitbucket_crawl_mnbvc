@@ -52,7 +52,12 @@ ext                 size
 ### 自动运行
 
 `auto_run.py` 文件可以在你写好的命令里自动运行脚本，直到结束。例如，写好命令到 `auto run.py` 文件，
-然后执行： `python auto_run.py` ，进程如果终止，会自动重新启动任务直到进程正常结束。
+然后执行： `python auto_run.py` ，进程如果终止，会自动重新启动任务直到进程正常结束。 为了正常运行 `auto_run.py` 文件，需要写一个.env文件存放key。
+
+.env文件内容如下
+```
+Atlassian_API_Token=你的bitbucket app password
+```
 
 > 直接requests.get(zip_url, allow_redirects=True, verify=False, timeout=60)文件，不是所有的zip都能下载下来。链接里有些文件过大的下载不下来。
 例如： request https://bitbucket.org/hansthexon/141020161/get/master.zip 就下载不下来。

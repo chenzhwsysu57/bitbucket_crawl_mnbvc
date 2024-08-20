@@ -3,13 +3,15 @@
 import subprocess
 import random
 import time 
-
+import os 
+from dotenv import load_dotenv
+load_dotenv()
 commands = [
     # command1
     [
         "python", "bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py",
         "-u", "ziweicen",
-        "-p", "ATBBjAva5yDBvEycM8HY3vrLLFBq1ECDA449",
+        "-p", os.getenv('Atlassian_API_Token'),
         "-i", "clone_urls_1000_5000"
     ]
 ]
