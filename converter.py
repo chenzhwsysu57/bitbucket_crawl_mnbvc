@@ -192,7 +192,7 @@ class Zipfile2JsonL:
             for Zfile in zf.filelist:
                 if Zfile.is_dir(): continue
                 code = CodeFileInstance(zip_path, Zfile, target_encoding="utf-8", zf=zf)
-                print(f"\033[1;32mextract_without_unpack: {code._path}\033[0m", flush=True)
+                # print(f"\033[1;32mextract_without_unpack: {code._path}\033[0m", flush=True)
                 if not self.should_skip_file(code):
                     self.save_code(code)
             zf.close()
@@ -241,7 +241,7 @@ class Zipfile2JsonL:
                                        "jpg","jpeg","png","gif","bmp","tiff","svg",
                                        "pdf","epub","mobi","docx","swf","webm","zip","rar")): continue
                 
-                print(f"\033[1;32mget_zipfile: {file}\033[0m", flush=True)
+                # print(f"\033[1;32mget_zipfile: {file}\033[0m", flush=True)
                 code = CodeFileInstance(repo_root, file, self.target_encoding)
                 self.save_code(code)
         except:

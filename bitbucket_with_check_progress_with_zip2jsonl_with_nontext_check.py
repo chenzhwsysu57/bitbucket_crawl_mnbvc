@@ -7,6 +7,36 @@ import urllib3
 import time
 from pathlib import Path
 from converter import Zipfile2JsonL  # 假设你的Zipfile2JsonL类代码在这个模块中
+from http import HTTPStatus 
+from requests.exceptions import HTTPError
+retries = 3 
+retry_codes = [
+    HTTPStatus.TOO_MANY_REQUESTS,
+    HTTPStatus.INTERNAL_SERVER_ERROR,
+    HTTPStatus.BAD_GATEWAY,
+    HTTPStatus.SERVICE_UNAVAILABLE,
+    HTTPStatus.GATEWAY_TIMEOUT,
+]
+def get_with_max_tries(zip_url, allow_redirects=True, verify=False, timeout=60):
+    retries = 3
+    retry_codes = [
+        HTTPStatus.TOO_MANY_REQUESTS,
+        HTTPStatus.INTERNAL_SERVER_ERROR,
+        HTTPStatus.BAD_GATEWAY,
+        HTTPStatus.SERVICE_UNAVAILABLE,
+        HTTPStatus.GATEWAY_TIMEOUT,
+    ]
+    for n in range(retries):
+        try:
+            response = requests.get(zip_url, allow_redirects=True, verify=False, timeout=60)
+        except HTTPError as exc:
+            code = exc.response.status_code
+            
+            if code in retry_codes:
+                # retry after n seconds
+                time.sleep(3)
+                continue
+        return response
 
 def load_repos(input):
     debug = os.environ.get('DEBUG', 'False')
@@ -80,9 +110,9 @@ def download_repo(csv_path, output, jsonl_output):
     data = load_csv(csv_path)
     total_jobs = len(data) - 1  # 总任务数（跳过header）
     
-    remaining_jobs = 999
+    remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
     while remaining_jobs > 0:
-        remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] == 'success' or row[1] == '404')
+        remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
 
         if remaining_jobs <= 0:
             print("process done.")
@@ -93,7 +123,8 @@ def download_repo(csv_path, output, jsonl_output):
         # 遍历CSV中的每个URL
         for row in data[1:]:  # 跳过header
             url, status, jsonl = row
-            if status != 'success' and status != '404':
+            if status not in ['success', '404', '403', '410', '443']:
+            # if status != 'success' and status != '404' and status != '403' and status != '410': # 只下载不包括这些的
 
                 # 格式化URL为ZIP文件的下载链接
                 zip_url = url.replace('.git', '/get/master.zip')
@@ -103,9 +134,10 @@ def download_repo(csv_path, output, jsonl_output):
                 try:
                     # 发出请求下载ZIP文件
                     print(f"request {zip_url:<{max_url_len}}", end=' ',flush=True)
+                    # r = get_with_max_tries(zip_url, allow_redirects=True, verify=False, timeout=60)
                     r = requests.get(zip_url, allow_redirects=True, verify=False, timeout=60)
                     r.raise_for_status()
-
+                    print(f"{r.status_code}", end=' ',flush=True)
                     # 将下载的内容保存为ZIP文件
                     with open(file_path, 'wb') as f:
                         f.write(r.content)
@@ -113,7 +145,11 @@ def download_repo(csv_path, output, jsonl_output):
                     # 调用Zipfile2JsonL实例进行JSONL转换
                     # 任务重启后防止jsonl重复写入。
                     if row[2] != 'exists':
-                        converter(file_path)
+                        print(f"converting..", end=' ',flush=True)
+                        try:
+                            converter(file_path)
+                        except Exception as e:
+                            pass  # 解压错误直接全部跳过。
                         row[2] = 'exists'
                         os.remove(file_path)
                     # 更新CSV中的状态为'success'
