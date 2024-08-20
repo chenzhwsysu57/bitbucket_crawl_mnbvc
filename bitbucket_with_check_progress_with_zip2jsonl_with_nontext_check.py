@@ -182,10 +182,14 @@ def download_repo(csv_path, output, jsonl_output):
 
     print("All URLs processed.")
 
+import os 
+from dotenv import load_dotenv
+load_dotenv()
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("-u", "--user", help="Bitbucket username", type=str, required=True)
-    ap.add_argument("-p", "--password", help="Bitbucket app password", type=str, required=True)
+    ap.add_argument("-u", "--user", help="Bitbucket username", type=str, default=os.getenv('username'))
+    ap.add_argument("-p", "--password", help="Bitbucket app password", type=str, default=os.getenv('Atlassian_API_Token'))
     ap.add_argument("-i", "--input", help="Bitbucket URLs file path", type=str, default='./clone_urls_1000')
     ap.add_argument("-o", "--output", help="Output directory", type=str, default='./bitbucket')
     ap.add_argument("-c", "--csv", help="CSV file to track download status", type=str, default='./download_status.csv')
