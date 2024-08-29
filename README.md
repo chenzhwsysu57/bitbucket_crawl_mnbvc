@@ -8,17 +8,21 @@
 
 ## 用法
 
-### 下载函数
-1. 检查 jsonl_output 文件夹，如果有内容重命名为其他文件名
-2. 检查download_status.csv 文件，如果有内容重命名为其他文件夹
-3. `sed -n '1000,5000p' clone_urls > clone_urls_1000_5000` ，用类似的命令，把文件第1000行到5000行之间的内容写入到文件，这是接下来希望下载的文件。（总共有 794057 行）
-4.  [注册bitbucket账号](https://id.atlassian.com/login?continue=https%3A%2F%2Fwww.atlassian.com%2Ftry%2Fcloud%2Fsignup%3Fbundle%3Dbitbucket)，并且 [获取app password](https://support.atlassian.com/bitbucket-cloud/docs/create-an-app-password/)。然后写入 `.env` 文件内容如下
+### 下载函数的用法
+
+1. [注册bitbucket账号](https://id.atlassian.com/login?continue=https%3A%2F%2Fwww.atlassian.com%2Ftry%2Fcloud%2Fsignup%3Fbundle%3Dbitbucket)，并且 [获取app password](https://support.atlassian.com/bitbucket-cloud/docs/create-an-app-password/)。然后写入 `.env` 文件内容如下
 ```
 Atlassian_API_Token=你的bitbucket app password
 username=你的butbucket用户名
 ```
-5. `python bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py --input 刚生成的新文件`
-
+2. 执行脚本
+```py
+python download_bitbucket_repos_from_urls.py --start 指定开头行号 --end 指定结尾行号
+```
+3. 监听写入json的状态：
+```bash
+watch -n 1 "du -h jsonl_output/bitbucketcode.* | sort -rV -k2.19"
+```
 
 
 输出形式如下：
@@ -32,9 +36,10 @@ request https://bitbucket.org/username/repo/get/master.zip            仓库处�
 等到没有新的内容输出，或者总任务数为0说明执行结束。
 
 - 如果网络中断，重新执行：
-`python bitbucket_with_check_progress_with_zip2jsonl_with_nontext_check.py  --input 刚生成的新文件` 
+`python download_bitbucket_repos_from_urls.py --start 指定开头行号 --end 指定结尾行号` 
 即可。
-- 如果一个仓库等很久都没下载下来，可以手动去 download_status.csv把那个状态改成已执行完毕，跳过它。参考：bug汇总。
+- 如果一个仓库等很久都没下载下来，可以手动去 download_status_xxx_yyy.csv把那个状态改成已执行完毕，跳过它。参考：bug汇总。
+
 
 ### 分析函数
 statics.py文件：当出现太大的压缩包，希望检查jsonl的文件后缀名可以用：

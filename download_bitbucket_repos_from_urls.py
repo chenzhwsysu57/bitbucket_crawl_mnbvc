@@ -227,18 +227,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-u", "--user", help="Bitbucket username", type=str, default=os.getenv('username'))
     ap.add_argument("-p", "--password", help="Bitbucket app password", type=str, default=os.getenv('Atlassian_API_Token'))
-    ap.add_argument("-i", "--input", help="Bitbucket URLs file path", type=str, default='./clone_urls_1000')
+
+    ap.add_argument( "--start", help="start idx from a list of repos", type=int, default=0)
+    ap.add_argument( "--end", help="end idx from a list of repos", type=int, default=1000)
     ap.add_argument("-o", "--output", help="Output directory", type=str, default='./bitbucket')
-    ap.add_argument("-c", "--csv", help="CSV file to track download status", type=str, default='./download_status.csv')
-    ap.add_argument("-j", "--jsonl_output", help="Output directory for JSONL files", type=str, default='./jsonl_output')
+
     args = vars(ap.parse_args())
 
     user = args['user']
     pwd = args['password']
-    input = args['input']
+    # input = args['input']
+    
+    # 增加input文件：
+    
     output = args['output']
-    csv_path = args['csv']
-    jsonl_output = args['jsonl_output']
+    start = args['start']
+    end = args['end']
+
+    csv_path = f"download_status_{start}_{end}.csv"
+    jsonl_output = f"jsonl_output_{start}_{end}"
+    input = f"clone_urls_{start}_{end}"
+    if not os.path.exists(input):
+        cmd = f"sed -n '{start},{end}p' clone_urls > clone_urls_{start}_{end}"
+        os.system(cmd)
+    # jsonl_output = args['jsonl_output']
 
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
