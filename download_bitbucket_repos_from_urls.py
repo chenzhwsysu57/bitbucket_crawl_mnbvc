@@ -147,6 +147,7 @@ def download_repo(csv_path, output, jsonl_output):
     total_jobs = len(data) - 1  # 总任务数（跳过header）
     
     remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
+    print(f"\033[1;32m{remaining_jobs} jobs found.\033[0m")
     while remaining_jobs > 0:
         remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
 
@@ -159,7 +160,7 @@ def download_repo(csv_path, output, jsonl_output):
         # 遍历CSV中的每个URL
         for row in data[1:]:  # 跳过header
             url, status, jsonl = row
-            if status not in ['success', '404', '403', '410', '443']:
+            if status not in ['success', '404', '403', '410', '443', 'skip']:
             # if status != 'success' and status != '404' and status != '403' and status != '410': # 只下载不包括这些的
 
                 # 格式化URL为ZIP文件的下载链接
@@ -169,7 +170,7 @@ def download_repo(csv_path, output, jsonl_output):
 
                 try:
                     # 发出请求下载ZIP文件
-                    msg = f"request {zip_url} of size {get_url_size(zip_url)}"
+                    msg = f"request {zip_url}"
                     print(f"{msg:<{max_url_len}}", end=' ',flush=True)
                     # r = get_with_max_tries(zip_url, allow_redirects=True, verify=False, timeout=60)
                     r = requests.get(zip_url, allow_redirects=True, verify=False, timeout=60)
