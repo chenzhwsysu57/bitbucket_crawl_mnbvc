@@ -145,11 +145,11 @@ def download_repo(csv_path, output, jsonl_output):
     # 加载CSV文件数据
     data = load_csv(csv_path)
     total_jobs = len(data) - 1  # 总任务数（跳过header）
-    
-    remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
+    skip_groups = ['success', '404', '403', '410', '443','skip']
+    remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in skip_groups)
     print(f"\033[1;32m{remaining_jobs} jobs found.\033[0m")
     while remaining_jobs > 0:
-        remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in ['success', '404', '403', '410', '443'])
+        remaining_jobs = sum(1 for row in data[1:] if row) - sum(1 for row in data[1:] if row[1] in skip_groups)
 
         if remaining_jobs <= 0:
             print("process done.")
@@ -160,7 +160,7 @@ def download_repo(csv_path, output, jsonl_output):
         # 遍历CSV中的每个URL
         for row in data[1:]:  # 跳过header
             url, status, jsonl = row
-            if status not in ['success', '404', '403', '410', '443', 'skip']:
+            if status not in skip_groups:
             # if status != 'success' and status != '404' and status != '403' and status != '410': # 只下载不包括这些的
 
                 # 格式化URL为ZIP文件的下载链接

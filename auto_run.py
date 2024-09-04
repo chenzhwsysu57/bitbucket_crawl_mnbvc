@@ -3,12 +3,24 @@ import os
 import subprocess
 import random
 from dotenv import load_dotenv
-
+import argparse
 load_dotenv()
+parser = argparse.ArgumentParser(description='Download Bitbucket repos from URLs.')
+
+    # 添加命令行参数
+parser.add_argument('--start', type=int, required=True, help='The start value')
+parser.add_argument('--end', type=int, required=True, help='The end value')
+
+# 解析命令行参数
+args = parser.parse_args()
+
+# 使用 args.start 和 args.end
+start_value = args.start
+end_value = args.end
 
 # Mock implementation of the repair function
 def repair(start, end):
-    print(f"Repairing... Position: {cur_pos}, Filename: {filename}")
+    
     csv_path = f'download_status_{start}_{end}.csv'
     import pandas as pd 
     df = pd.read_csv(csv_path)
@@ -29,8 +41,8 @@ commands = [
     # command1 with placeholders `??` for start and end
     [
         "python", "download_bitbucket_repos_from_urls.py",
-        "--start", "10000",  # replace with actual start value
-        "--end", "30000",      # replace with actual end value
+        "--start", f"{start_value}",  # replace with actual start value
+        "--end", f"{end_value}",      # replace with actual end value
     ]
 ]
 
