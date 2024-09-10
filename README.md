@@ -16,8 +16,8 @@ Atlassian_API_Token=你的bitbucket app password
 username=你的butbucket用户名
 ```
 2. 执行脚本
-```py
-python download_bitbucket_repos_from_urls.py --start 指定开头行号 --end 指定结尾行号
+```bash
+sh auto.sh
 ```
 3. 监听写入json的状态：
 ```bash
