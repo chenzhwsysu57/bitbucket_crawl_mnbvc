@@ -19,6 +19,7 @@ username=你的butbucket用户名
 ```bash
 sh auto.sh
 ```
+代码可重复运行，不会重复下载。网络中断、重启等原因直接重新执行即可。如果全部下载完了会有提示。
 3. 监听写入json的状态：
 ```bash
 watch -n 1 "du -h jsonl_output/bitbucketcode.* | sort -rV -k2.19"
@@ -36,9 +37,8 @@ request https://bitbucket.org/username/repo/get/master.zip            仓库处�
 等到没有新的内容输出，或者总任务数为0说明执行结束。
 
 - 如果网络中断，重新执行：
-`python download_bitbucket_repos_from_urls.py --start 指定开头行号 --end 指定结尾行号` 
+`sh auto.sh` 
 即可。
-- 如果一个仓库等很久都没下载下来，可以手动去 download_status_xxx_yyy.csv把那个状态改成已执行完毕，跳过它。参考：bug汇总。
 
 
 ### 分析函数
@@ -60,21 +60,3 @@ ext                 size
 .json          321.81 KB
 .js            271.13 KB
 ```
-### 自动运行
-
-`auto_run.py` 文件可以在你写好的命令里自动运行脚本，直到结束。例如，写好命令到 `auto run.py` 文件，
-然后执行： `python auto_run.py` ，进程如果终止，会自动重新启动任务直到进程正常结束。 为了正常运行 `auto_run.py` 文件，需要写一个.env文件存放key。但是可能存在没处理好的错误，导致一直死循环处理一个仓库。目前需要手动跳过。参考《bug汇总》。
-
-> 执行auto run之前，记得先修改input文件为你要处理的仓库列表。
-
-
-
-
-
-
-#### bug汇总
-
-由于 try except 块捕获太多，代码有些bug还没有来得及修改，但不是第一优先级。因此可以手动修改。
-1. `https://bitbucket.org/hansthexon/141020161.git,init,none` 这条记录，仓库能成功下载下来，但解析的时候不报错为什么直接结束了代码进程。有待考察。
-    目前解决方法；把这条记录手动改成 `https://bitbucket.org/hansthexon/141020161.git,success,exists`
-
